@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-finder"
+version = "0.1.0"
+description = "Deterministic scholarly search and evidence-aware research analysis"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Research Finder contributors"}]
+dependencies = []
+
+[project.scripts]
+research-finder = "research_finder.cli:main"
+research-agent = "research_finder.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["research_finder*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
