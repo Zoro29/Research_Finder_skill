@@ -50,6 +50,15 @@ class Tests(unittest.TestCase):
         out = client.search(parse_query("RESEARCH - XD: machine - XP: Jane Doe - XU: MIT - XY: 2020-2023 - XT: article"))
         self.assertEqual(len(out), 1)
 
+    def test_multiple_same_category_values_are_alternatives(self):
+        item = {"id":"W2","title":"Robotics","type":"article",
+                "authorships":[{"author":{"display_name":"Another Researcher"},
+                "institutions":[{"display_name":"Tsinghua University"}]}],
+                "publication_year":2025}
+        client = OpenAlexClient(opener=lambda *a, **k: Response({"results":[item]}))
+        query = parse_query("RESEARCH - XD Robotics XP Missing Name, Another Researcher XU Missing University, Tsinghua University")
+        self.assertEqual(len(client.search(query)), 1)
+
     def test_errors_are_explicit(self):
         with self.assertRaises(OpenAlexError):
             OpenAlexClient(opener=lambda *a, **k: (_ for _ in ()).throw(OSError("offline"))).fetch(

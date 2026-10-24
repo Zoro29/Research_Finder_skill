@@ -28,6 +28,17 @@ and does not require manual `PYTHONPATH` changes. Search does not require
 Ollama. Configure `OPENALEX_MAILTO` when desired; configure Ollama only for
 optional model-assisted analysis.
 
+For supported model-dependent operations:
+
+```bash
+python scripts/research.py analyze "RESEARCH - XD Robotics"
+python scripts/research.py outreach "RESEARCH - XP Professor Name" --professor "Professor Name"
+python scripts/research.py related "adaptive soft robotic manipulation"
+```
+
+Set `LLM_PROVIDER=ollama`, `OLLAMA_BASE_URL`, and `OLLAMA_MODEL` to the exact
+installed model tag before analysis. The skill never downloads models.
+
 ## Workflow
 
 1. Parse and validate the request with the deterministic project parser.

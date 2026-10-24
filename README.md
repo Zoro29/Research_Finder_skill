@@ -72,8 +72,27 @@ constraints visible rather than returning unrelated papers.
 ## Ollama
 
 OpenAlex search works without Ollama. The optional adapter uses the local
-Ollama HTTP API; configure the model and endpoint in the environment when
-adding model-assisted analysis. Do not download a model automatically.
+Ollama HTTP API. Configure it with the exact tag returned by `ollama list`:
+
+```bash
+export LLM_PROVIDER=ollama
+export OLLAMA_BASE_URL=http://localhost:11434
+export OLLAMA_MODEL=your-installed-tag
+```
+
+Publishing this skill does not distribute Gemma 4, install Ollama, or grant a
+host agent access to the local machine. A compatible host agent may use its
+own model to follow `SKILL.md`; explicit Python analysis sends requests to the
+configured Ollama server. No model is downloaded automatically.
+
+```bash
+research-agent analyze "RESEARCH - XD Robotics"
+research-agent outreach "RESEARCH - XP Professor Name" --professor "Professor Name"
+research-agent related "adaptive soft robotic manipulation"
+```
+
+The `related` command performs a small preliminary OpenAlex overlap search; it
+does not establish novelty or replace a systematic literature review.
 
 ## Validation and tests
 

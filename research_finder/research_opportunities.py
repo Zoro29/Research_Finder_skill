@@ -25,7 +25,16 @@ def check_overlap(
     search: Callable[[str], Sequence[SearchResult]],
 ) -> ResearchExtension:
     """Attach search-backed related work; never claim novelty from an empty result."""
-    related = tuple(search(extension.title))
+    queries = (extension.title, extension.research_question)
+    related = tuple(
+        result
+        for query in queries
+        for result in search(query)
+    )
+    unique = {}
+    for result in related:
+        unique[result.paper.doi or result.paper.id] = result
+    related = tuple(unique.values())
     return ResearchExtension(
         title=extension.title, motivation=extension.motivation,
         research_question=extension.research_question, hypothesis=extension.hypothesis,

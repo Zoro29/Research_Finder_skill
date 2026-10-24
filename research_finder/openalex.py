@@ -1,6 +1,6 @@
 """OpenAlex HTTP client. Network access is isolated here for easy mocking."""
 from __future__ import annotations
-import json, time
+import json
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -39,10 +39,14 @@ class OpenAlexClient:
             if key in seen: continue
             seen.add(key)
             haystack = (paper.title + " " + paper.abstract + " " + " ".join(paper.authors)).lower()
-            authors = " ".join(paper.authors).lower()
             institutions = " ".join(paper.institutions).lower()
-            if query.professors and not all(any(term.lower() in author.lower() for author in paper.authors) for term in query.professors): continue
-            if query.universities and not all(term.lower() in institutions for term in query.universities): continue
+            if query.professors and not any(
+                term.casefold() in author.casefold()
+                for term in query.professors for author in paper.authors
+            ): continue
+            if query.universities and not any(
+                term.casefold() in institutions for term in query.universities
+            ): continue
             if query.year_range and (paper.publication_year is None or not query.year_from <= paper.publication_year <= query.year_to): continue
             if query.paper_types:
                 paper_type = "review" if paper.paper_type == "survey" else paper.paper_type
