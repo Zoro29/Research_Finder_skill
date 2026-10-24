@@ -45,9 +45,11 @@ never downloads models. For slower local hardware, configure
 evidence that the paper or model is unavailable.
 
 Search presents five papers and supports `--interactive`. After selecting a
-paper, use `summary`, `section`, `compare N`, `switch N`, `back`, or natural
-language questions. The retrieval layer reports abstract-only evidence when
-legitimate full text cannot be downloaded or extracted.
+paper, do not generate an unsolicited summary: wait for the user's command.
+Use `summary`, `method`, `limitations`, `section`, `compare N`, `switch`,
+`back`, or natural-language questions. The retrieval layer reports
+full-text, partial, abstract-only, or unavailable evidence when legitimate
+full text cannot be downloaded or extracted.
 
 ## Workflow
 

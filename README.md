@@ -98,9 +98,10 @@ Use `--limit N` to control the retrieval window. `--recent` sorts by
 publication date first; without it, results use relevance, citation count,
 and open-access signals.
 
-Use `--no-interactive` for batch output. In a session, use `summary`,
-`methodology`, `findings`, `limitations`, `section`, `compare 2`, `switch 3`,
-`back`, or natural-language questions. Selected papers are retrieved from
+Use `--no-interactive` for batch output. In a session, enter a paper number
+first; selection only establishes the active paper and waits for your next
+command. Use `summary`, `method`, `limitations`, `section`, `compare 2`,
+`switch`, `back`, or natural-language questions. Selected papers are retrieved from
 legitimate OpenAlex/landing-page sources and cached in `.research_cache/`.
 If full text cannot be extracted, the session says that full text is
 unavailable and limits analysis to the abstract and metadata.

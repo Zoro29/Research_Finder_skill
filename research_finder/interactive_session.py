@@ -13,7 +13,7 @@ class ResearchSession:
         self.results = tuple(results)
         self.retriever, self.mode, self.analyzer = retriever, mode, analyzer
         self.input, self.output = input_fn, output_fn
-        self.selected = 0
+        self.selected: int | None = None
         self.documents: dict[str, RetrievedPaper] = {}
         self.history: list[tuple[str, str]] = []
 
@@ -22,7 +22,7 @@ class ResearchSession:
         return self.documents.setdefault(paper.id, self.retriever.retrieve(paper))
 
     def run(self) -> None:
-        self.output("paper> Select a paper number, ask a question, or type help/back/quit.")
+        self.output("paper> Select a paper number, or type switch, help, back, or quit.")
         while True:
             try: command = self.input("paper> ").strip()
             except EOFError: return
@@ -32,6 +32,9 @@ class ResearchSession:
             if lower == "back":
                 self.output("Returning to the search results.")
                 return
+            if lower == "switch":
+                self._choose_paper()
+                continue
             if lower == "help":
                 self.output("Commands: summary, paper, section, compare N, switch N, back, quit; natural-language questions are supported.")
                 continue
@@ -39,9 +42,15 @@ class ResearchSession:
                 self._switch(command)
                 continue
             if lower == "paper":
-                self.output(self.results[self.selected].paper)
+                if self.selected is None:
+                    self.output("Select a paper first.")
+                else:
+                    self.output(self.results[self.selected].paper)
                 continue
             if lower == "section":
+                if self.selected is None:
+                    self.output("Select a paper first.")
+                    continue
                 doc = self.document(self.selected)
                 self.output("\n".join(h for h, _ in doc.sections) or "No section headings were extracted.")
                 continue
@@ -52,6 +61,18 @@ class ResearchSession:
                 self._compare(command[8:])
                 continue
             self._answer(command)
+
+    def _choose_paper(self):
+        self.output("Available papers:")
+        for number, result in enumerate(self.results, 1):
+            self.output(f"[{number}] {result.paper.title}")
+        try:
+            value = self.input("Select a paper number (or back): ").strip()
+        except EOFError:
+            return
+        if value.casefold() in {"back", "q", "quit"}:
+            return
+        self._switch(value)
 
     def _switch(self, value):
         try:
@@ -70,6 +91,8 @@ class ResearchSession:
 
     def _compare(self, value):
         try:
+            if self.selected is None:
+                raise ValueError
             other = int(value) - 1
             if not 0 <= other < len(self.results): raise ValueError
             left, right = self.document(self.selected), self.document(other)
@@ -81,11 +104,15 @@ class ResearchSession:
     def _answer(self, question, documents=None):
         commands = {
             "summary": "Provide a structured briefing: problem, motivation, contributions, method, findings, limitations, and future work.",
+            "method": "Explain the methodology, setup, datasets, baselines, and metrics. Say when unavailable.",
             "methodology": "Explain the methodology, setup, datasets, baselines, and metrics. Say when unavailable.",
             "findings": "Summarize only the findings actually supported by the evidence, including numbers only when present.",
             "limitations": "List author-stated limitations separately from limitations inferred from the available evidence.",
         }
         question = commands.get(question.casefold(), question)
+        if self.selected is None:
+            self.output("Select a paper first.")
+            return
         doc = self.document(self.selected)
         documents = documents or (doc,)
         if doc.status != "full-text":
@@ -93,8 +120,13 @@ class ResearchSession:
             self.output(f"Full text unavailable. Available evidence: {available}. "
                         "Analysis is limited to the available material.")
         context = "\n\n".join(
-            f"[Paper {i + 1}; status={item.status}; source={item.source_url or 'metadata'}]\n"
-            + "\n".join(chunk.text for chunk in relevant_chunks(item, question))
+            f"[Active paper: {item.paper.title}; OpenAlex ID: {item.paper.id}; "
+            f"DOI: {item.paper.doi or 'unavailable'}; status={item.status}; "
+            f"source={item.source_url or 'metadata'}]\n"
+            + "\n".join(
+                f"[section={chunk.section or 'unidentified'}] {chunk.text}"
+                for chunk in relevant_chunks(item, question)
+            )
             for i, item in enumerate(documents)
         )
         if self.mode == "online":
