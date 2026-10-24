@@ -16,6 +16,12 @@ Record source URLs and section/page/table references when available. Classify
 claims as verified metadata, author-stated, evidence-based inference, or
 speculative proposal.
 
+Analysis has two explicit modes. In `local` mode, Python sends the retrieved
+evidence to the configured Ollama model. In `online` mode, the host agent
+retrieves evidence with the Python engine and performs reasoning with its own
+model; there is no Python API for calling the host model. Never silently switch
+between these modes.
+
 ## Opportunities and outreach
 
 Research extensions should be tied to a limitation, result, method, or

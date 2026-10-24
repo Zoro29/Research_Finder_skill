@@ -6,13 +6,45 @@ from .config import Settings
 from .ollama import OllamaAnalyzer, OllamaError
 from .professor_outreach import draft_outreach
 from .research_opportunities import ResearchExtension, check_overlap
+
+def _print_paper(result, number):
+    paper = result.paper
+    print(f"\nPaper {number}: {paper.title}")
+    print(f"OpenAlex ID: {paper.id}")
+    print(f"Authors: {', '.join(paper.authors) or '(unavailable)'}")
+    print(f"Year: {paper.publication_year or '(unavailable)'}")
+    print(f"Venue: {paper.venue or '(unavailable)'}")
+    print(f"DOI: {paper.doi or '(unavailable)'}")
+    print(f"Open access: {'yes' if paper.open_access else 'no/unknown'}")
+    print(f"Source: {paper.url or '(unavailable)'}")
+    print(f"Abstract: {paper.abstract or '(unavailable)'}")
+
+def _interactive(results):
+    print("\nInteractive exploration is retrieval-focused; full text is not fabricated.")
+    while True:
+        try:
+            selection = input("Select paper number (or q to quit): ").strip()
+        except EOFError:
+            return
+        if selection.casefold() in {"q", "quit", ""}:
+            return
+        try:
+            number = int(selection)
+            result = results[number - 1]
+        except (ValueError, IndexError):
+            print("Enter a paper number from the displayed results.")
+            continue
+        _print_paper(result, number)
+        print("Follow-up analysis: use the host agent in online mode, or run "
+              "`research-agent analyze` in local mode.")
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="research-agent", description="Search OpenAlex scholarly works")
     sub = p.add_subparsers(dest="command", required=True)
     search = sub.add_parser("search")
     search.add_argument("query")
     search.add_argument("--mailto", default=os.getenv("OPENALEX_MAILTO"))
-    analyze = sub.add_parser("analyze", help="analyze the first matching paper with Ollama")
+    search.add_argument("--interactive", action="store_true")
+    analyze = sub.add_parser("analyze", help="analyze evidence in the selected mode")
     analyze.add_argument("query")
     outreach = sub.add_parser("outreach", help="draft outreach from the first matching paper")
     outreach.add_argument("query")
@@ -34,8 +66,11 @@ def main(argv=None) -> int:
             return 1
         try:
             settings = Settings.from_env()
-            if settings.provider != "ollama":
-                raise OllamaError("set LLM_PROVIDER=ollama and OLLAMA_MODEL to enable analysis")
+            if settings.analysis_mode == "online":
+                _print_paper(results[0], 1)
+                print("\nOnline mode: the compatible host agent should analyze the evidence above "
+                      "using its own model. This standalone CLI does not call a host-agent model.")
+                return 0
             analysis = OllamaAnalyzer(settings.ollama_model, settings.ollama_base_url).analyze(
                 [results[0].paper], "Summarize the research problem, method, findings, limitations, and evidence.")
         except (OllamaError, ValueError) as e:
@@ -72,5 +107,7 @@ def main(argv=None) -> int:
         print(f"{i}. {r.paper.title} — {r.paper.publication_year or 'n.d.'} "
               f"[{r.paper.cited_by_count} citations] {r.paper.url or ''}")
     print("Analysis: optional; configure Ollama to analyze retrieved evidence.")
+    if args.interactive:
+        _interactive(results[:5])
     return 0
 if __name__ == "__main__": raise SystemExit(main())

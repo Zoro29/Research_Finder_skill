@@ -27,16 +27,26 @@ competing implementations.
 ## Install and use
 
 ```bash
-python -m pip install -e .
+python3 -m pip install --user --break-system-packages -e .
 research-agent search "RESEARCH - XD Large Language Models XY 2020-2024 XT Article"
 ```
 
-On Ubuntu with an externally managed Python installation, use a virtual
-environment:
+The `--break-system-packages` flag is needed only on Ubuntu installations
+using Python's PEP 668 externally-managed-environment protection. This project
+has no third-party runtime dependencies. If you prefer an isolated install,
+use a virtual environment and either activate it or call its executable:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -e .
+source .venv/bin/activate
+```
+
+If `research-agent` is still not found after a user install, ensure
+`~/.local/bin` is on `PATH`, then start a new shell:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
 ```
 
 The skill script can also be run directly from the repository root without
@@ -79,6 +89,42 @@ export LLM_PROVIDER=ollama
 export OLLAMA_BASE_URL=http://localhost:11434
 export OLLAMA_MODEL=your-installed-tag
 ```
+
+Choose the analysis mode explicitly:
+
+| Feature | Local Mode | Online Mode |
+| --- | --- | --- |
+| Paper discovery | OpenAlex | OpenAlex |
+| Paper retrieval | Python research engine | Python research engine |
+| Analysis model | Gemma 4 through Ollama | Compatible host agent's model |
+| Requires Ollama | Yes | No |
+| Requires internet for OpenAlex search | Yes | Yes |
+| LLM inference per-token API fees | None for local inference | Depends on host service |
+| Uses local hardware for inference | Yes | Not for the host model |
+| Privacy | Evidence is sent to local Ollama; OpenAlex queries still go online | Depends on host agent and its data policies |
+| Analysis quality | Depends on local model and available context | Depends on host model and available context |
+
+For local mode:
+
+```bash
+export RESEARCH_ANALYSIS_MODE=local
+export LLM_PROVIDER=ollama
+export OLLAMA_BASE_URL=http://localhost:11434
+export OLLAMA_MODEL=gemma4:e2b
+```
+
+For online mode:
+
+```bash
+export RESEARCH_ANALYSIS_MODE=online
+```
+
+Online mode does not call Ollama from Python. The compatible host agent must
+execute retrieval, inspect the returned evidence, and perform the analysis
+using its own model. This repository does not invent an API for accessing a
+host agent's internal model. Local inference has no per-token API fee, but it
+still consumes hardware and electricity. Online inference may require a paid
+subscription, usage allowance, or API billing.
 
 Publishing this skill does not distribute Gemma 4, install Ollama, or grant a
 host agent access to the local machine. A compatible host agent may use its

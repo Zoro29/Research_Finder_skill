@@ -15,6 +15,19 @@ class ProviderConfigTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 Settings.from_env()
 
+    def test_analysis_modes_are_validated(self):
+        with patch.dict(os.environ, {"RESEARCH_ANALYSIS_MODE": "local",
+                                     "LLM_PROVIDER": "ollama",
+                                     "OLLAMA_MODEL": "gemma4:e2b"}, clear=True):
+            settings = Settings.from_env()
+            self.assertEqual(settings.analysis_mode, "local")
+        with patch.dict(os.environ, {"RESEARCH_ANALYSIS_MODE": "online"}, clear=True):
+            settings = Settings.from_env()
+            self.assertEqual(settings.analysis_mode, "online")
+        with patch.dict(os.environ, {"RESEARCH_ANALYSIS_MODE": "remote"}, clear=True):
+            with self.assertRaises(ValueError):
+                Settings.from_env()
+
     def test_ollama_uses_configured_tag(self):
         seen = {}
         class Response:

@@ -37,7 +37,9 @@ python scripts/research.py related "adaptive soft robotic manipulation"
 ```
 
 Set `LLM_PROVIDER=ollama`, `OLLAMA_BASE_URL`, and `OLLAMA_MODEL` to the exact
-installed model tag before analysis. The skill never downloads models.
+installed model tag before local analysis. Select the mode with
+`RESEARCH_ANALYSIS_MODE=local` or `RESEARCH_ANALYSIS_MODE=online`. The skill
+never downloads models.
 
 ## Workflow
 
@@ -55,6 +57,19 @@ installed model tag before analysis. The skill never downloads models.
    draft for user review.
 8. Report uncertainty, unavailable evidence, filtering constraints, and
    network/model failures explicitly.
+
+## Analysis modes
+
+In `local` mode, invoke the Python analysis command; it sends evidence only to
+the configured local Ollama server. In `online` mode, do not invoke Ollama:
+use the host agent's own model to reason over the retrieved evidence and keep
+the selected paper in conversation context. The standalone CLI cannot call a
+host model, so it prints the evidence and handoff instructions instead.
+
+Both modes use the same OpenAlex results and evidence rules. Local inference
+has no per-token API charge but uses the user's hardware and electricity.
+Online inference may require a subscription, allowance, or API billing
+depending on the host service.
 
 Read only the relevant reference when more detail is needed:
 
