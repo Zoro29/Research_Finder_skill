@@ -21,6 +21,7 @@ From the skill root, run the executable implementation:
 
 ```bash
 python scripts/research.py search "RESEARCH - XD Robotics XP Professor Name XY 2024-2026"
+python scripts/research.py search --recent "RESEARCH - XD Robotics XY 2020-2026"
 ```
 
 The script uses the existing `research_finder` package in the parent project
@@ -39,7 +40,14 @@ python scripts/research.py related "adaptive soft robotic manipulation"
 Set `LLM_PROVIDER=ollama`, `OLLAMA_BASE_URL`, and `OLLAMA_MODEL` to the exact
 installed model tag before local analysis. Select the mode with
 `RESEARCH_ANALYSIS_MODE=local` or `RESEARCH_ANALYSIS_MODE=online`. The skill
-never downloads models.
+never downloads models. For slower local hardware, configure
+`OLLAMA_TIMEOUT` and `OLLAMA_NUM_PREDICT` rather than treating a timeout as
+evidence that the paper or model is unavailable.
+
+Search presents five papers and supports `--interactive`. After selecting a
+paper, use `summary`, `section`, `compare N`, `switch N`, `back`, or natural
+language questions. The retrieval layer reports abstract-only evidence when
+legitimate full text cannot be downloaded or extracted.
 
 ## Workflow
 

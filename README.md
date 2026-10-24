@@ -79,6 +79,32 @@ Different component categories constrain the same result set. Multiple
 domains are OR/relevance alternatives. A no-result response keeps the
 constraints visible rather than returning unrelated papers.
 
+## Interactive paper research
+
+Search displays up to five results by default and opens a paper session:
+
+```bash
+research-agent search "RESEARCH - XD robotics"
+```
+
+To prioritize the most recent matching papers while preserving all query
+filters:
+
+```bash
+research-agent search --recent "RESEARCH - XD robotics XY 2020-2026"
+```
+
+Use `--limit N` to control the retrieval window. `--recent` sorts by
+publication date first; without it, results use relevance, citation count,
+and open-access signals.
+
+Use `--no-interactive` for batch output. In a session, use `summary`,
+`methodology`, `findings`, `limitations`, `section`, `compare 2`, `switch 3`,
+`back`, or natural-language questions. Selected papers are retrieved from
+legitimate OpenAlex/landing-page sources and cached in `.research_cache/`.
+If full text cannot be extracted, the session says that full text is
+unavailable and limits analysis to the abstract and metadata.
+
 ## Ollama
 
 OpenAlex search works without Ollama. The optional adapter uses the local
@@ -111,7 +137,12 @@ export RESEARCH_ANALYSIS_MODE=local
 export LLM_PROVIDER=ollama
 export OLLAMA_BASE_URL=http://localhost:11434
 export OLLAMA_MODEL=gemma4:e2b
+export OLLAMA_TIMEOUT=180
+export OLLAMA_NUM_PREDICT=512
 ```
+
+`OLLAMA_TIMEOUT` and `OLLAMA_NUM_PREDICT` are configurable because local
+inference latency depends on hardware, model loading, and paper context.
 
 For online mode:
 

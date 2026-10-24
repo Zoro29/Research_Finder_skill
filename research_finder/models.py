@@ -38,6 +38,7 @@ class Paper:
     venue: str | None = None
     open_access: bool = False
     url: str | None = None
+    oa_pdf_url: str | None = None
     paper_type: str | None = None
     institutions: tuple[str, ...] = ()
     raw: Mapping[str, Any] = field(default_factory=dict, compare=False, repr=False)
@@ -56,6 +57,10 @@ class Paper:
                    cited_by_count=int(item.get("cited_by_count") or 0), doi=item.get("doi"),
                    venue=source.get("display_name"), open_access=bool(oa.get("is_oa")),
                    url=primary.get("landing_page_url") or item.get("id"),
+                   oa_pdf_url=(
+                       oa.get("oa_url") if isinstance(oa.get("oa_url"), str)
+                       else (oa.get("oa_url") or {}).get("url")
+                   ),
                    paper_type=item.get("type"), institutions=institutions, raw=item)
 
 def _abstract(index: Any) -> str:

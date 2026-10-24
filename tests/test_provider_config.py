@@ -1,4 +1,6 @@
 import os
+import tempfile
+from pathlib import Path
 import unittest
 from unittest.mock import patch
 
@@ -41,6 +43,24 @@ class ProviderConfigTests(unittest.TestCase):
         result = OllamaAnalyzer("gemma4:e2b", opener=opener).generate("hello")
         self.assertEqual(result, "ok")
         self.assertEqual(seen["model"], "gemma4:e2b")
+
+    def test_ollama_runtime_limits_are_configurable(self):
+        with patch.dict(os.environ, {"OLLAMA_TIMEOUT": "240", "OLLAMA_NUM_PREDICT": "128"}, clear=True):
+            settings = Settings.from_env()
+        self.assertEqual(settings.ollama_timeout, 240)
+        self.assertEqual(settings.ollama_num_predict, 128)
+
+    def test_cli_startup_loads_dotenv_without_overriding_shell(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, ".env").write_text(
+                "RESEARCH_ANALYSIS_MODE=local\nLLM_PROVIDER=ollama\nOLLAMA_MODEL=from-dotenv\n",
+                encoding="utf-8",
+            )
+            with patch("research_finder.config.Path.cwd", return_value=Path(directory)), \
+                 patch.dict(os.environ, {"OLLAMA_MODEL": "from-shell"}, clear=True):
+                settings = Settings.from_env(load_dotenv=True)
+        self.assertEqual(settings.analysis_mode, "local")
+        self.assertEqual(settings.ollama_model, "from-shell")
 
 if __name__ == "__main__":
     unittest.main()

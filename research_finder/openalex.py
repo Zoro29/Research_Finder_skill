@@ -11,7 +11,7 @@ class OpenAlexClient:
     base_url = "https://api.openalex.org/works"
     def __init__(self, mailto: str | None = None, timeout: float = 15, opener=None):
         self.mailto, self.timeout, self.opener = mailto, timeout, opener or urlopen
-    def fetch(self, query: SearchQuery) -> list[Paper]:
+    def fetch(self, query: SearchQuery, recent: bool = False) -> list[Paper]:
         search_terms = list(query.domains) + list(query.professors) + list(query.universities)
         params: dict[str, str] = {"search": " ".join(search_terms), "per-page": str(min(query.limit * 5, 200)), "select": "id,title,authorships,abstract_inverted_index,publication_year,cited_by_count,doi,primary_location,open_access,type"}
         filters = []
@@ -23,6 +23,8 @@ class OpenAlexClient:
             api_types = ["review" if kind == "survey" else kind for kind in query.paper_types]
             filters.append("type:" + "|".join(api_types))
         if filters: params["filter"] = ",".join(filters)
+        if recent:
+            params["sort"] = "publication_date:desc"
         if self.mailto: params["mailto"] = self.mailto
         request = Request(self.base_url + "?" + urlencode(params), headers={"Accept": "application/json", "User-Agent": "research-finder/0.1"})
         try:
@@ -30,8 +32,8 @@ class OpenAlexClient:
         except HTTPError as e: raise OpenAlexError(f"OpenAlex returned HTTP {e.code}") from e
         except (URLError, TimeoutError, OSError, json.JSONDecodeError) as e: raise OpenAlexError(f"OpenAlex request failed: {e}") from e
         return [Paper.from_openalex(x) for x in payload.get("results", []) if isinstance(x, dict)]
-    def search(self, query: SearchQuery) -> list[SearchResult]:
-        papers = self.fetch(query)
+    def search(self, query: SearchQuery, recent: bool = False) -> list[SearchResult]:
+        papers = self.fetch(query, recent=recent)
         seen: set[str] = set(); results = []
         terms = tuple(dict.fromkeys(t.lower() for t in (list(query.domains) + list(query.professors) + list(query.universities)) if len(t) > 1))
         for paper in papers:
@@ -57,4 +59,12 @@ class OpenAlexClient:
                 continue
             score = len(matched) * 10 + min(paper.cited_by_count / 100, 10) + (1 if paper.open_access else 0)
             results.append(SearchResult(paper, score, matched))
-        return sorted(results, key=lambda r: (-r.score, -(r.paper.publication_year or 0), r.paper.title.casefold()))[:query.limit]
+        if recent:
+            return sorted(
+                results,
+                key=lambda r: (-(r.paper.publication_year or 0), -r.score, r.paper.title.casefold()),
+            )[:query.limit]
+        return sorted(
+            results,
+            key=lambda r: (-r.score, -(r.paper.publication_year or 0), r.paper.title.casefold()),
+        )[:query.limit]

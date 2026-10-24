@@ -16,6 +16,14 @@ Record source URLs and section/page/table references when available. Classify
 claims as verified metadata, author-stated, evidence-based inference, or
 speculative proposal.
 
+When a paper is selected, the retrieval layer first tries an OpenAlex
+open-access URL or landing page, caches extracted text locally, and falls back
+explicitly to the abstract and metadata. PDF/HTML extraction and overlapping
+chunks are bounded and may be incomplete; the interface reports
+`full-text`, `abstract-only`, or `unavailable` rather than claiming full-text
+reading when extraction fails. Cached full text remains associated with the
+same paper ID and source URL.
+
 Analysis has two explicit modes. In `local` mode, Python sends the retrieved
 evidence to the configured Ollama model. In `online` mode, the host agent
 retrieves evidence with the Python engine and performs reasoning with its own

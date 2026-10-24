@@ -64,4 +64,19 @@ class Tests(unittest.TestCase):
             OpenAlexClient(opener=lambda *a, **k: (_ for _ in ()).throw(OSError("offline"))).fetch(
                 parse_query("RESEARCH - XD: biology"))
 
+    def test_recent_search_uses_openalex_sort_and_newest_first(self):
+        items = [
+            {"id": "W-old", "title": "Robotics old", "publication_year": 2020},
+            {"id": "W-new", "title": "Robotics new", "publication_year": 2025},
+        ]
+        seen = {}
+        def opener(request, **kwargs):
+            from urllib.parse import parse_qs, urlparse
+            seen.update(parse_qs(urlparse(request.full_url).query))
+            return Response({"results": items})
+        out = OpenAlexClient(opener=opener).search(
+            parse_query("RESEARCH - XD Robotics"), recent=True)
+        self.assertEqual(seen["sort"], ["publication_date:desc"])
+        self.assertEqual(out[0].paper.id, "W-new")
+
 if __name__ == "__main__": unittest.main()

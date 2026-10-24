@@ -28,3 +28,7 @@ The parser rejects missing values, reversed or invalid years, unsupported
 publication types, duplicate components, unexpected standalone `X`, and
 queries without a typed component. It preserves the trimmed input as
 `original_query`. Use `python scripts/research.py --help` for execution help.
+
+The optional CLI flag `--recent` changes only result ordering: OpenAlex
+publication-date ordering is requested and the same parsed constraints remain
+enforced. `--limit N` controls the retrieval limit.
