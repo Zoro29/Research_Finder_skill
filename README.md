@@ -1,3 +1,28 @@
+Required changes -- Improving latency of the model
+                 -- Improving overall Architecture Design 
+
+
+Have you struggled like me, Reading multiple research paper before mailing a proffesor for a junior research internship, finding papers related to your Domains, and  Going through full paper when someone ask you something simple :(
+I made a solution for the same - Research_finder -> It finds, reads and answers your question.
+find research papers using filters - Multiple Domains, Multiple Profesors
+
+But isn't this idea too simple ?? 
+
+I felt it too, but we will be using this same skill and upgrade it to something more important.
+Sometimes you might come to challenges/ hackathons (especiallly Kaggle) where just knowing the code is not enough you need High-level knowlege in chemistry , physics etc.
+Here we are feeding our agents with knowlege from Research Papers by top Researchers in their field. :)
+
+lets take a example to understand better, 
+
+     let there be a kaggle ml-competition to detect cells.
+     our agent can use our skill find the best recent paper about detecting cells / image processing . 
+     Now our agent has high level knowlege to work on our ML model.
+
+
+
+
+
+
 # Research Finder / `research-agent` skill
 
 Research Finder is a deterministic scholarly search and evidence-aware
